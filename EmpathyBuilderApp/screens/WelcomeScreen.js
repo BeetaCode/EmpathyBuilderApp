@@ -1,7 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 const WelcomeScreen = () => {
+  const navigation = useNavigation();
+
   return (
     <View style={styles.container}>
       <Image
@@ -14,7 +17,10 @@ const WelcomeScreen = () => {
         A community dedicated to fostering understanding, kindness, and positive
         social change through everyday actions.
       </Text>
-      <TouchableOpacity style={styles.createAccountButton}>
+      <TouchableOpacity
+        style={styles.createAccountButton}
+        onPress={() => navigation.navigate('CreateAccount')}
+      >
         <Text style={styles.createAccountText}>Create Account</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.loginButton}>

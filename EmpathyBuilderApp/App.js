@@ -1,12 +1,27 @@
 import React from 'react';
-import { StatusBar } from 'expo-status-bar';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import WelcomeScreen from './screens/WelcomeScreen';
+import CreateAccountScreen from './screens/CreateAccountScreen';
+
+const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
-    <>
-      <StatusBar style="auto" />
-      <WelcomeScreen />
-    </>
+    <NavigationContainer>
+      <Stack.Navigator
+        initialRouteName="Welcome"
+        screenOptions={{ headerShown: false }}
+      >
+        <Stack.Screen
+          name="Welcome"
+          component={WelcomeScreen}
+        />
+        <Stack.Screen
+          name="CreateAccount"
+          component={CreateAccountScreen}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
