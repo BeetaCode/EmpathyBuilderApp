@@ -20,28 +20,50 @@ const CreateAccountScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showFirstNameError, setShowFirstNameError] = useState('');
+  const [showLastNameError, setShowLastNameError] = useState('');
+  const [showEmailError, setShowEmailError] = useState('');
+  const [showPasswordError, setShowPasswordError] = useState('');
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const passwordRegex =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$%^&+=!]).{6,20}$/;
 
   const validate = () => {
+    let valid = true;
+
     if (!firstName.trim()) {
-      Alert.alert('Validation Error', 'First Name is required.');
-      return false;
+      setShowFirstNameError('First Name Required');
+      valid = false;
+    } else {
+      setShowFirstNameError('');
     }
     if (!lastName.trim()) {
-      Alert.alert('Validation Error', 'Last Name is required.');
-      return false;
+      setShowLastNameError('Last Name Required');
+      valid = false;
+    } else {
+      setShowLastNameError('');
     }
-    if (!email.trim() || !email.includes('@')) {
-      Alert.alert('Validation Error', 'Valid Email is required.');
-      return false;
+    if (!email.trim()) {
+      setShowEmailError('Email Requird');
+      valid = false;
+    } else if (!emailRegex.test(email)) {
+      setShowEmailError('Email Not Valid');
+    } else {
+      setShowEmailError('');
     }
-    if (!password.trim() || password.length < 6) {
-      Alert.alert(
-        'Validation Error',
-        'Password must be at least 6 characters.'
+    if (!password.trim()) {
+      setShowPasswordError('Password Required');
+      valid = false;
+    } else if (!passwordRegex.test(password)) {
+      setShowPasswordError(
+        'Password must be 6-20 chars, include uppercase, number & special character'
       );
-      return false;
+    } else {
+      setShowPasswordError('');
     }
-    return true;
+
+    return valid;
   };
 
   const handleRegister = async () => {
@@ -102,12 +124,18 @@ const CreateAccountScreen = () => {
         value={firstName}
         onChangeText={setFirstName}
       />
+      {showFirstNameError !== '' && (
+        <Text style={styles.errorText}>{showFirstNameError}</Text>
+      )}
       <TextInput
         placeholder="Last Name"
         style={styles.input}
         value={lastName}
         onChangeText={setLastName}
       />
+      {showLastNameError !== '' && (
+        <Text style={styles.errorText}>{showLastNameError}</Text>
+      )}
       <TextInput
         placeholder="Email"
         style={styles.input}
@@ -115,6 +143,9 @@ const CreateAccountScreen = () => {
         value={email}
         onChangeText={setEmail}
       />
+      {showEmailError !== '' && (
+        <Text style={styles.errorText}>{showEmailError}</Text>
+      )}
       <TextInput
         placeholder="Password"
         style={styles.input}
@@ -122,6 +153,9 @@ const CreateAccountScreen = () => {
         value={password}
         onChangeText={setPassword}
       />
+      {showPasswordError !== '' && (
+        <Text style={styles.errorText}>{showPasswordError}</Text>
+      )}
 
       <TouchableOpacity
         style={styles.continueButton}
@@ -220,6 +254,12 @@ const styles = StyleSheet.create({
   },
   link: {
     color: '#3478f6',
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 12,
+    marginBottom: 10,
+    paddingLeft: 10,
   },
 });
 
