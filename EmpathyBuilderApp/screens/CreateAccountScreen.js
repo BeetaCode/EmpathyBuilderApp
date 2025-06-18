@@ -24,6 +24,7 @@ const CreateAccountScreen = () => {
   const [showLastNameError, setShowLastNameError] = useState('');
   const [showEmailError, setShowEmailError] = useState('');
   const [showPasswordError, setShowPasswordError] = useState('');
+  const [passwordVisible, setPasswordVisible] = useState(false);
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const passwordRegex =
@@ -146,13 +147,23 @@ const CreateAccountScreen = () => {
       {showEmailError !== '' && (
         <Text style={styles.errorText}>{showEmailError}</Text>
       )}
-      <TextInput
-        placeholder="Password"
-        style={styles.input}
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
+      <View style={styles.passwordContainer}>
+        <TextInput
+          placeholder="Password"
+          style={styles.passwordInput}
+          secureTextEntry={!passwordVisible}
+          value={password}
+          onChangeText={setPassword}
+        />
+        <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)}>
+          <Ionicons
+            name={passwordVisible ? 'eye-off' : 'eye'}
+            size={24}
+            color="#888"
+            style={styles.eyeIcon}
+          />
+        </TouchableOpacity>
+      </View>
       {showPasswordError !== '' && (
         <Text style={styles.errorText}>{showPasswordError}</Text>
       )}
@@ -172,6 +183,7 @@ const CreateAccountScreen = () => {
       <TouchableOpacity
         style={styles.loginButton}
         onPress={() => navigation.navigate('Login')}
+        disabled={loading}
       >
         <Text style={styles.loginText}>Already have an account</Text>
       </TouchableOpacity>
@@ -260,6 +272,23 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginBottom: 10,
     paddingLeft: 10,
+  },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    marginBottom: 6,
+  },
+  passwordInput: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingRight: 10,
+  },
+  eyeIcon: {
+    padding: 4,
   },
 });
 
