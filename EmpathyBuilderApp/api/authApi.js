@@ -1,8 +1,9 @@
 import axios from 'axios';
+import { API_URL } from '@env';
 
 // Base URL of backend API
-const BASE_URL = 'http://192.168.8.102:5246/api/Auth';
-
+const BASE_URL = `${API_URL}/Auth`;
+console.log(BASE_URL);
 export const registerUser = async (userDetails) => {
   try {
     const response = await axios.post(`${BASE_URL}/register`, userDetails);
@@ -18,6 +19,7 @@ export const loginUser = async (userDetails) => {
     return { success: true, data: response.data };
   } catch (error) {
     const errData = error.response?.data || { message: 'Network error' };
+    console.log(errData);
     return { success: false, error: errData };
   }
 };

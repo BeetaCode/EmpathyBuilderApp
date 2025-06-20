@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { loginUser } from '../api/authApi';
 
 const LoginScreen = () => {
@@ -47,14 +48,26 @@ const LoginScreen = () => {
     setLoading(true);
 
     try {
-      const data = await loginUser({
-        email,
-        password,
-      });
+      const data = await loginUser({ email, password });
 
       if (data.success) {
-        console.log('Logged in:', data.data);
-        navigation.navigate('Home'); // Adjust this route if needed
+        const userData = data.data?.data;
+
+        if (!userData?.token) {
+          Alert.alert('Login Error', 'Token missing in response.');
+          setLoading(false);
+          return;
+        }
+
+        const { token, id, firstName, lastName } = userData;
+
+        await AsyncStorage.setItem('token', token);
+        await AsyncStorage.setItem(
+          'user',
+          JSON.stringify({ id, firstName, lastName })
+        );
+
+        navigation.navigate('Home');
       } else if (
         data.error.message === 'user_login_failed_please_check_your_credentials'
       ) {
@@ -137,7 +150,7 @@ const LoginScreen = () => {
 
       <TouchableOpacity
         style={styles.forgotPasswordButton}
-        onPress={() => navigation.navigate('ForgotPassword')} // Update if you have this screen
+        onPress={() => navigation.navigate('ForgotPassword')}
       >
         <Text style={styles.forgotPasswordText}>Forgot password</Text>
       </TouchableOpacity>

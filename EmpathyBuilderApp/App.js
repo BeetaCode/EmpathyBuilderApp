@@ -5,6 +5,7 @@ import WelcomeScreen from './screens/WelcomeScreen';
 import CreateAccountScreen from './screens/CreateAccountScreen';
 import LoginScreen from './screens/LoginScreen';
 import HomeScreen from './screens/HomeScreen';
+import AuthLoadingScreen from './screens/AuthLoadingScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -15,6 +16,11 @@ export default function App() {
         initialRouteName="Welcome"
         screenOptions={{ headerShown: false }}
       >
+        <Stack.Screen
+          name="AuthLoading"
+          component={AuthLoadingScreen}
+          options={{ headerShown: false }}
+        />
         <Stack.Screen
           name="Welcome"
           component={WelcomeScreen}
