@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,12 +6,31 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { getUserStories } from '../api/userStoryApi';
 
 const HomeScreen = () => {
+  const [story, setStory] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStories = async () => {
+      const result = await getUserStories();
+      if (result.success) {
+        setStory(result.data[0]);
+      } else {
+        console.warn('Failed to load stories:', result.error.message);
+      }
+      setLoading(false);
+    };
+
+    fetchStories();
+  }, []);
+
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerText}>Empathy Builder</Text>
@@ -24,95 +43,155 @@ const HomeScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Featured Story */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Featured Story</Text>
-          <TouchableOpacity>
-            <Text style={styles.viewAll}>View All</Text>
-          </TouchableOpacity>
-        </View>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={{ paddingBottom: 50 }}
+      >
+        {/* Featured Story */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Featured Story</Text>
+            <TouchableOpacity>
+              <Text style={styles.viewAll}>View All</Text>
+            </TouchableOpacity>
+          </View>
 
-        <View style={styles.card}>
-          <View style={styles.storyHeader}>
-            <Text style={styles.storyAuthor}>Emma Johnson</Text>
-            <Ionicons
-              name="person-circle-outline"
-              size={24}
-              color="#888"
+          {loading ? (
+            <ActivityIndicator
+              size="large"
+              color="#3478f6"
             />
+          ) : story ? (
+            <View style={styles.card}>
+              <View style={styles.storyHeader}>
+                <Text style={styles.storyAuthor}>{story.fullName}</Text>
+                <Ionicons
+                  name="person-circle-outline"
+                  size={24}
+                  color="#888"
+                />
+              </View>
+
+              <View style={styles.storyTagContainer}>
+                {story.userStoryTags.map((tag, i) => (
+                  <Text
+                    key={i}
+                    style={styles.storyTag}
+                  >
+                    {tag.tag}
+                  </Text>
+                ))}
+              </View>
+
+              <Text style={styles.storyText}>
+                {story.story.length > 150
+                  ? `${story.story.substring(0, 150)}...`
+                  : story.story}
+              </Text>
+
+              <View style={styles.storyFooter}>
+                <Text style={styles.iconText}>💙 {story.likes}</Text>
+                <Text style={styles.timeText}>
+                  {new Date(story.postedOn).toLocaleDateString()}
+                </Text>
+              </View>
+
+              <TouchableOpacity style={styles.button}>
+                <Text style={styles.buttonText}>Read More</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <Text>No stories available.</Text>
+          )}
+        </View>
+
+        {/* Current Challenge */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Current Challenge</Text>
+            <TouchableOpacity>
+              <Text style={styles.viewAll}>View All</Text>
+            </TouchableOpacity>
           </View>
 
-          <View style={styles.storyTagContainer}>
-            <Text style={styles.storyTag}>Kindness</Text>
+          <View style={styles.card}>
+            <View style={styles.challengeTags}>
+              <Text style={styles.challengeTagGreen}>Easy</Text>
+              <Text style={styles.challengeTagBlue}>Environment</Text>
+              <Ionicons
+                name="trophy-outline"
+                size={20}
+                color="#888"
+                style={{ marginLeft: 'auto' }}
+              />
+            </View>
+
+            <Text style={styles.challengeTitle}>Community Clean-up</Text>
+            <Text style={styles.challengeText}>
+              Organize or join a local clean-up effort in your neighborhood or a
+              nearby park.
+            </Text>
+
+            <View style={styles.challengeFooter}>
+              <Text style={styles.iconText}>👥 152 participants</Text>
+              <Text style={styles.timeText}>12 days left</Text>
+            </View>
+
+            <TouchableOpacity style={styles.button}>
+              <Text style={styles.buttonText}>Join Challenge</Text>
+            </TouchableOpacity>
           </View>
+        </View>
 
-          <Text style={styles.storyText}>
-            Yesterday, I noticed an elderly person struggling with their grocery
-            bags. More...
-          </Text>
-
-          <View style={styles.storyFooter}>
-            <Text style={styles.iconText}>💙 24</Text>
-            <Text style={styles.timeText}>2 hours ago</Text>
-          </View>
-
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>Read More</Text>
+        {/* Share Stories */}
+        <View style={styles.shareStoriesCard}>
+          <TouchableOpacity style={styles.linkButton}>
+            <Ionicons
+              name="book-outline"
+              size={40}
+              color="#3478f6"
+            />
+            <Text style={styles.shareStoriesHeader}>Share Stories</Text>
+            <Text style={styles.shareText}>
+              Share your personal experiences of empathy and inspire others to
+              make a difference.
+            </Text>
           </TouchableOpacity>
         </View>
-      </View>
 
-      {/* Current Challenge */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Current Challenge</Text>
-          <TouchableOpacity>
-            <Text style={styles.viewAll}>View All</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.card}>
-          <View style={styles.challengeTags}>
-            <Text style={styles.challengeTagGreen}>Easy</Text>
-            <Text style={styles.challengeTagBlue}>Environment</Text>
+        {/* Join Challenges */}
+        <View style={styles.joinChallengesCard}>
+          <TouchableOpacity style={styles.linkButton}>
             <Ionicons
               name="trophy-outline"
-              size={20}
-              color="#888"
-              style={{ marginLeft: 'auto' }}
+              size={40}
+              color="#3478f6"
             />
-          </View>
-
-          <Text style={styles.challengeTitle}>Community Clean-up</Text>
-          <Text style={styles.challengeText}>
-            Organize or join a local clean-up effort in your neighborhood or a
-            nearby park.
-          </Text>
-
-          <View style={styles.challengeFooter}>
-            <Text style={styles.iconText}>👥 152 participants</Text>
-            <Text style={styles.timeText}>12 days left</Text>
-          </View>
-
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>Join Challenge</Text>
+            <Text style={styles.shareStoriesHeader}>Join Challenges</Text>
+            <Text style={styles.shareText}>
+              Participate in community challenges designed to create positive
+              social impact.
+            </Text>
           </TouchableOpacity>
         </View>
-      </View>
 
-      {/* Share Stories */}
-      <View style={styles.shareCard}>
-        <Ionicons
-          name="book-outline"
-          size={28}
-          color="#3478f6"
-        />
-        <Text style={styles.shareText}>
-          Share your personal experiences of empathy and inspire others to act.
-        </Text>
-      </View>
-    </ScrollView>
+        {/* Earn Rewards */}
+        <View style={styles.earnRewardsCard}>
+          <Ionicons
+            name="medal-outline"
+            size={40}
+            color="#3478f6"
+          />
+          <Text style={styles.shareStoriesHeader}>Earn Rewards</Text>
+          <Text style={styles.shareText}>
+            Complete learning modules and challenges to earn badges and
+            recognition.
+          </Text>
+        </View>
+      </ScrollView>
+      {/* Footer */}
+      <View style={styles.footer}></View>
+    </View>
   );
 };
 
@@ -169,6 +248,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   storyTagContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     marginTop: 6,
     marginBottom: 8,
   },
@@ -179,11 +260,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 10,
-    alignSelf: 'flex-start',
+    marginRight: 6,
+    marginBottom: 6,
+    // alignSelf: 'flex-start',
   },
   storyText: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#333',
+    lineHeight: 22,
     marginBottom: 8,
   },
   storyFooter: {
@@ -242,22 +326,72 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     alignItems: 'center',
   },
+  linkButton: {
+    borderRadius: 6,
+    paddingVertical: 8,
+    alignItems: 'center',
+  },
   buttonText: {
     color: '#fff',
     fontSize: 14,
   },
-  shareCard: {
+  shareStoriesCard: {
     borderWidth: 1,
     borderColor: '#3478f6',
+    backgroundColor: '#E3ECFF',
     borderRadius: 10,
     padding: 20,
     alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 20,
+    height: 200,
   },
-  shareText: {
-    fontSize: 13,
+  joinChallengesCard: {
+    borderWidth: 1,
+    borderColor: '#FFB62D',
+    backgroundColor: '#FFFDE3',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+    height: 200,
+  },
+  earnRewardsCard: {
+    borderWidth: 1,
+    borderColor: '#2DFF4D',
+    backgroundColor: '#E3FFF1',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+    height: 200,
+  },
+  shareStoriesHeader: {
+    fontSize: 20,
+    fontWeight: 'bold',
     textAlign: 'center',
     color: '#333',
     marginTop: 10,
+  },
+  shareText: {
+    fontSize: 17,
+    textAlign: 'center',
+    color: '#333',
+    marginTop: 10,
+  },
+  footer: {
+    height: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderColor: '#ddd',
+    backgroundColor: '#fff',
+  },
+
+  footerText: {
+    fontSize: 12,
+    color: '#888',
   },
 });

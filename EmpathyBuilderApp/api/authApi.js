@@ -3,7 +3,7 @@ import { API_URL } from '@env';
 
 // Base URL of backend API
 const BASE_URL = `${API_URL}/Auth`;
-console.log(BASE_URL);
+
 export const registerUser = async (userDetails) => {
   try {
     const response = await axios.post(`${BASE_URL}/register`, userDetails);
