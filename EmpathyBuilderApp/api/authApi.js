@@ -9,6 +9,7 @@ export const registerUser = async (userDetails) => {
     const response = await axios.post(`${BASE_URL}/register`, userDetails);
     return response.data;
   } catch (error) {
+    console.log(error);
     throw error.response ? error.response.data : new Error('Network error');
   }
 };

@@ -15,6 +15,7 @@ export const getUserStories = async () => {
 
     return { success: true, data: response.data.data };
   } catch (error) {
+    console.log(error);
     const errData = error.response?.data || { message: 'Network error' };
     return { success: false, error: errData };
   }

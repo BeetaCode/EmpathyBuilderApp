@@ -10,8 +10,10 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { getUserStories } from '../api/userStoryApi';
+import { useNavigation } from '@react-navigation/native';
 
 const HomeScreen = () => {
+  const navigation = useNavigation();
   const [story, setStory] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -145,7 +147,10 @@ const HomeScreen = () => {
 
         {/* Share Stories */}
         <View style={styles.shareStoriesCard}>
-          <TouchableOpacity style={styles.linkButton}>
+          <TouchableOpacity
+            style={styles.linkButton}
+            onPress={() => navigation.navigate('ShareUserStory')}
+          >
             <Ionicons
               name="book-outline"
               size={40}
@@ -208,7 +213,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 0,
   },
   headerText: {
     fontSize: 20,
