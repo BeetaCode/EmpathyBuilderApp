@@ -14,12 +14,13 @@ import {
   Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getMyUserStories } from '../api/userStoryApi';
+import { getMyUserStories, addUserStory } from '../api/userStoryApi';
 
 const ShareUserStoryScreen = () => {
   const navigation = useNavigation();
   const [story, setStory] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [shareLoading, setShareLoading] = useState(true);
   const [userStory, setuserStory] = useState('');
   const [tag, setTag] = useState('');
   const [tags, setTags] = useState([]);
@@ -38,13 +39,8 @@ const ShareUserStoryScreen = () => {
     setTags(tags.filter((t) => t !== tagToRemove));
   };
 
-  const handleSubmitStory = () => {
-    Keyboard.dismiss();
-    console.log('Story:', story);
-    console.log('Tags:', tags);
-  };
-
   useEffect(() => {
+    setShareLoading(false);
     const fetchStories = async () => {
       const result = await getMyUserStories();
       if (result.success) {
@@ -73,30 +69,30 @@ const ShareUserStoryScreen = () => {
   };
 
   const handleShareStory = async () => {
-    console.log(userStory);
     if (!validate()) return;
+    setShareLoading(true);
 
     try {
-      const data = await registerUser({
-        firstName,
-        lastName,
-        email,
-        password,
+      const response = await addUserStory({
+        story: userStory,
+        tags,
+        isShared,
+        isAnonymous,
       });
 
-      if (data.message === 'user_registered_successfully') {
-        Alert.alert(
-          'Success',
-          'Registration successful! Please check your email.'
-        );
-        navigation.navigate('Login');
+      if (
+        response.success &&
+        response.data.message === 'user_story_posted_successfully'
+      ) {
+        Alert.alert('You are Great!!!', response.data.data.feedback);
       } else {
-        Alert.alert('Error', data.message || 'Registration failed.');
+        Alert.alert('Error', 'Something went wrong.');
       }
     } catch (err) {
-      Alert.alert('Registration Error', err.message || 'Something went wrong.');
+      Alert.alert('Error', 'Something went wrong.');
     } finally {
-      setLoading(false);
+      setShareLoading(false);
+      setTag('');
     }
   };
 
@@ -280,8 +276,13 @@ const ShareUserStoryScreen = () => {
             <TouchableOpacity
               style={styles.button}
               onPress={() => handleShareStory()}
+              disabled={shareLoading}
             >
-              <Text style={styles.buttonText}>Share My Story</Text>
+              {shareLoading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Share My Story</Text>
+              )}
             </TouchableOpacity>
           </View>
         </ScrollView>
