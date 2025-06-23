@@ -8,6 +8,9 @@ import {
   Alert,
   ActivityIndicator,
   Image,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -83,78 +86,89 @@ const LoginScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity
-        onPress={() => navigation.goBack()}
-        style={styles.backButton}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ flex: 1 }}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
+    >
+      <ScrollView
+        style={styles.container}
+        keyboardShouldPersistTaps="handled"
       >
-        <Ionicons
-          name="arrow-back"
-          size={24}
-          color="black"
-        />
-      </TouchableOpacity>
-
-      <Image
-        source={require('../assets/login-user.png')}
-        style={styles.icon}
-        resizeMode="contain"
-      />
-
-      <Text style={styles.title}>Login to Account</Text>
-      <Text style={styles.subtitle}>Login to start your empathy journey</Text>
-
-      <TextInput
-        placeholder="Email"
-        style={styles.input}
-        keyboardType="email-address"
-        value={email}
-        onChangeText={setEmail}
-      />
-      {showEmailError !== '' && (
-        <Text style={styles.errorText}>{showEmailError}</Text>
-      )}
-
-      <View style={styles.passwordContainer}>
-        <TextInput
-          placeholder="Password"
-          style={styles.passwordInput}
-          secureTextEntry={!passwordVisible}
-          value={password}
-          onChangeText={setPassword}
-        />
-        <TouchableOpacity onPress={() => setPasswordVisible(!passwordVisible)}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
           <Ionicons
-            name={passwordVisible ? 'eye-off' : 'eye'}
+            name="arrow-back"
             size={24}
-            color="#888"
-            style={styles.eyeIcon}
+            color="black"
           />
         </TouchableOpacity>
-      </View>
-      {showPasswordError !== '' && (
-        <Text style={styles.errorText}>{showPasswordError}</Text>
-      )}
 
-      <TouchableOpacity
-        style={styles.continueButton}
-        onPress={handleLogin}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.continueText}>Continue</Text>
+        <Image
+          source={require('../assets/login-user.png')}
+          style={styles.icon}
+          resizeMode="contain"
+        />
+
+        <Text style={styles.title}>Login to Account</Text>
+        <Text style={styles.subtitle}>Login to start your empathy journey</Text>
+
+        <TextInput
+          placeholder="Email"
+          style={styles.input}
+          keyboardType="email-address"
+          value={email}
+          onChangeText={setEmail}
+        />
+        {showEmailError !== '' && (
+          <Text style={styles.errorText}>{showEmailError}</Text>
         )}
-      </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.forgotPasswordButton}
-        onPress={() => navigation.navigate('ForgotPassword')}
-      >
-        <Text style={styles.forgotPasswordText}>Forgot password</Text>
-      </TouchableOpacity>
-    </View>
+        <View style={styles.passwordContainer}>
+          <TextInput
+            placeholder="Password"
+            style={styles.passwordInput}
+            secureTextEntry={!passwordVisible}
+            value={password}
+            onChangeText={setPassword}
+          />
+          <TouchableOpacity
+            onPress={() => setPasswordVisible(!passwordVisible)}
+          >
+            <Ionicons
+              name={passwordVisible ? 'eye-off' : 'eye'}
+              size={24}
+              color="#888"
+              style={styles.eyeIcon}
+            />
+          </TouchableOpacity>
+        </View>
+        {showPasswordError !== '' && (
+          <Text style={styles.errorText}>{showPasswordError}</Text>
+        )}
+
+        <TouchableOpacity
+          style={styles.continueButton}
+          onPress={handleLogin}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.continueText}>Continue</Text>
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.forgotPasswordButton}
+          onPress={() => navigation.navigate('ForgotPassword')}
+        >
+          <Text style={styles.forgotPasswordText}>Forgot password</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 

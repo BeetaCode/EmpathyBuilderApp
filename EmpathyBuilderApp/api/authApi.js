@@ -19,6 +19,7 @@ export const loginUser = async (userDetails) => {
     const response = await axios.post(`${BASE_URL}/login`, userDetails);
     return { success: true, data: response.data };
   } catch (error) {
+    console.log(error);
     const errData = error.response?.data || { message: 'Network error' };
     console.log(errData);
     return { success: false, error: errData };

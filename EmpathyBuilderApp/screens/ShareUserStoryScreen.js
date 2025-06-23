@@ -4,26 +4,48 @@ import {
   View,
   Text,
   StyleSheet,
+  TextInput,
   TouchableOpacity,
   ScrollView,
+  Alert,
   Image,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getUserStories } from '../api/userStoryApi';
+import { getMyUserStories } from '../api/userStoryApi';
 
 const ShareUserStoryScreen = () => {
   const navigation = useNavigation();
   const [story, setStory] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
+  const [userStory, setuserStory] = useState('');
+  const [tag, setTag] = useState('');
+  const [tags, setTags] = useState([]);
+  const [showStoryError, setShowStoryError] = useState('');
+  const [isShared, setIsShared] = useState(false);
+  const [isAnonymous, setIsAnonymous] = useState(false);
+
+  const handleAddTag = () => {
+    if (tag.trim() !== '') {
+      setTags([...tags, tag.trim()]);
+      setTag('');
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove) => {
+    setTags(tags.filter((t) => t !== tagToRemove));
+  };
+
+  const handleSubmitStory = () => {
+    Keyboard.dismiss();
+    console.log('Story:', story);
+    console.log('Tags:', tags);
+  };
 
   useEffect(() => {
     const fetchStories = async () => {
-      const userData = await AsyncStorage.getItem('user');
-      if (userData) {
-        setUser(JSON.parse(userData));
-      }
       const result = await getMyUserStories();
       if (result.success) {
         setStory(result.data[0]);
@@ -35,98 +57,238 @@ const ShareUserStoryScreen = () => {
 
     fetchStories();
   }, []);
+
+  const validate = () => {
+    let valid = true;
+
+    if (userStory === '') {
+      setShowStoryError('Story cannot be empty');
+
+      valid = false;
+    } else {
+      setShowStoryError('');
+    }
+
+    return valid;
+  };
+
+  const handleShareStory = async () => {
+    console.log(userStory);
+    if (!validate()) return;
+
+    try {
+      const data = await registerUser({
+        firstName,
+        lastName,
+        email,
+        password,
+      });
+
+      if (data.message === 'user_registered_successfully') {
+        Alert.alert(
+          'Success',
+          'Registration successful! Please check your email.'
+        );
+        navigation.navigate('Login');
+      } else {
+        Alert.alert('Error', data.message || 'Registration failed.');
+      }
+    } catch (err) {
+      Alert.alert('Registration Error', err.message || 'Something went wrong.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerText}>Empathy Builder</Text>
-        <TouchableOpacity>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ flex: 1 }}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
+    >
+      <ScrollView
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.header}>
+          <Text style={styles.headerText}>Empathy Builder</Text>
+          <TouchableOpacity>
+            <Ionicons
+              name="person-circle-outline"
+              size={28}
+              color="#000"
+            />
+          </TouchableOpacity>
+        </View>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
           <Ionicons
-            name="person-circle-outline"
-            size={28}
-            color="#000"
+            name="arrow-back"
+            size={24}
+            color="black"
           />
         </TouchableOpacity>
-      </View>
-      <TouchableOpacity
-        onPress={() => navigation.goBack()}
-        style={styles.backButton}
-      >
-        <Ionicons
-          name="arrow-back"
-          size={24}
-          color="black"
-        />
-      </TouchableOpacity>
-      <Text style={styles.title}>Share My Story</Text>
-      <Text style={styles.subtitle}>
-        Share an experience where you practiced empathy or made a positive
-        impact
-      </Text>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={{ paddingBottom: 50 }}
-      >
-        {/* my Story */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>My Stories</Text>
-            <TouchableOpacity>
-              <Text style={styles.viewAll}>View All</Text>
-            </TouchableOpacity>
-          </View>
 
-          {loading ? (
-            <ActivityIndicator
-              size="large"
-              color="#3478f6"
-            />
-          ) : story ? (
-            <View style={styles.card}>
-              <View style={styles.storyHeader}>
-                <Text style={styles.storyAuthor}>{story.fullName}</Text>
-                <Ionicons
-                  name="person-circle-outline"
-                  size={24}
-                  color="#888"
-                />
-              </View>
-
-              <View style={styles.storyTagContainer}>
-                {story.userStoryTags.map((tag, i) => (
-                  <Text
-                    key={i}
-                    style={styles.storyTag}
-                  >
-                    {tag.tag}
-                  </Text>
-                ))}
-              </View>
-
-              <Text style={styles.storyText}>
-                {story.story.length > 150
-                  ? `${story.story.substring(0, 150)}...`
-                  : story.story}
-              </Text>
-
-              <View style={styles.storyFooter}>
-                <Text style={styles.iconText}>💙 {story.likes}</Text>
-                <Text style={styles.timeText}>
-                  {new Date(story.postedOn).toLocaleDateString()}
-                </Text>
-              </View>
-
-              <TouchableOpacity style={styles.button}>
-                <Text style={styles.buttonText}>Read More</Text>
+        <ScrollView contentContainerStyle={{ paddingBottom: 50 }}>
+          <Text style={styles.title}>Share My Story</Text>
+          <Text style={styles.subtitle}>
+            Share an experience where you practiced empathy or made a positive
+            impact
+          </Text>
+          {/* my Story */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>My Stories</Text>
+              <TouchableOpacity>
+                <Text style={styles.viewAll}>View All</Text>
               </TouchableOpacity>
             </View>
-          ) : (
-            <Text>No stories available.</Text>
-          )}
-        </View>
+
+            {loading ? (
+              <ActivityIndicator
+                size="large"
+                color="#3478f6"
+              />
+            ) : story ? (
+              <View style={styles.card}>
+                <View style={styles.storyHeader}>
+                  <Text style={styles.storyAuthor}>{story.fullName}</Text>
+                  <Ionicons
+                    name="person-circle-outline"
+                    size={24}
+                    color="#888"
+                  />
+                </View>
+
+                <View style={styles.storyTagContainer}>
+                  {story.userStoryTags.map((tag, i) => (
+                    <Text
+                      key={i}
+                      style={styles.storyTag}
+                    >
+                      {tag.tag}
+                    </Text>
+                  ))}
+                </View>
+
+                <Text style={styles.storyText}>
+                  {story.story.length > 150
+                    ? `${story.story.substring(0, 150)}...`
+                    : story.story}
+                </Text>
+
+                <View style={styles.storyFooter}>
+                  <Text style={styles.iconText}>💙 {story.likes}</Text>
+                  <Text style={styles.timeText}>
+                    {new Date(story.postedOn).toLocaleDateString()}
+                  </Text>
+                </View>
+
+                <TouchableOpacity style={styles.button}>
+                  <Text style={styles.buttonText}>Read More</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <Text style={styles.noStoryText}>No stories available.</Text>
+            )}
+          </View>
+          {/* Share my story */}
+          <View style={styles.card}>
+            <Text style={[styles.myStoryHeader, styles.sectionTitle]}>
+              My Story
+            </Text>
+            <TextInput
+              placeholder="Type your story here..."
+              style={styles.textArea}
+              value={userStory}
+              multiline={true}
+              numberOfLines={10}
+              onChangeText={setuserStory}
+            />
+            {showStoryError !== '' && (
+              <Text style={styles.errorText}>{showStoryError}</Text>
+            )}
+            <View style={styles.checkboxGroup}>
+              <TouchableOpacity
+                style={styles.checkboxContainer}
+                onPress={() => setIsShared(!isShared)}
+              >
+                <View style={styles.checkbox}>
+                  {isShared && (
+                    <Ionicons
+                      name="checkmark"
+                      size={16}
+                      color="blue"
+                    />
+                  )}
+                </View>
+                <Text style={styles.checkboxLabel}>Make Public</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.checkboxContainer}
+                onPress={() => setIsAnonymous(!isAnonymous)}
+              >
+                <View style={styles.checkbox}>
+                  {isAnonymous && (
+                    <Ionicons
+                      name="checkmark"
+                      size={16}
+                      color="blue"
+                    />
+                  )}
+                </View>
+                <Text style={styles.checkboxLabel}>Share Anonymously</Text>
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.sectionTitle}>Add Tags (Optional)</Text>
+            <View style={styles.tagRow}>
+              <TextInput
+                style={styles.tagInput}
+                value={tag}
+                onChangeText={setTag}
+                placeholder="Add a tag here..."
+              />
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={handleAddTag}
+              >
+                <Text style={styles.addButtonText}>Add</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Display tags below input */}
+            <View style={styles.tagList}>
+              {tags.map((tag, index) => (
+                <View
+                  key={index}
+                  style={styles.tagChip}
+                >
+                  <Text style={styles.tagText}>{tag}</Text>
+                  <TouchableOpacity onPress={() => handleRemoveTag(tag)}>
+                    <Ionicons
+                      name="close"
+                      size={14}
+                      color="#fff"
+                    />
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => handleShareStory()}
+            >
+              <Text style={styles.buttonText}>Share My Story</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+        {/* Footer */}
+        <View style={styles.footer}></View>
       </ScrollView>
-      {/* Footer */}
-      <View style={styles.footer}></View>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -156,6 +318,12 @@ const styles = StyleSheet.create({
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginBottom: 0,
+    padding: 10,
+  },
+  myStoryHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 8,
   },
   sectionTitle: {
@@ -181,6 +349,17 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
   },
+  addButton: {
+    marginLeft: 8,
+    backgroundColor: '#3478f6',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  addButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
   storyAuthor: {
     fontWeight: 'bold',
     fontSize: 14,
@@ -202,8 +381,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     textAlign: 'center',
-    marginBottom: 0,
+    marginBottom: 10,
     paddingHorizontal: 50,
+  },
+  noStoryText: {
+    marginLeft: 10,
   },
   input: {
     borderWidth: 1,
@@ -212,6 +394,17 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     marginBottom: 12,
+  },
+  textArea: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 12,
+    textAlignVertical: 'top', // Important for Android
+    fontSize: 14,
+    marginBottom: 12,
+    minHeight: 150,
+    backgroundColor: 'white',
   },
   continueButton: {
     backgroundColor: '#3478f6',
@@ -224,9 +417,17 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
   },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginBottom: 12,
+  },
   card: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#2D6EFF',
     borderRadius: 10,
     padding: 12,
     backgroundColor: '#f9f9f9',
@@ -268,10 +469,83 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 10,
   },
+  tagRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+    marginTop: 10,
+  },
+  tagInput: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    textAlignVertical: 'top', // Important for Android
+    fontSize: 14,
+    backgroundColor: 'white',
+    width: 275,
+    padding: 14,
+  },
+  tagList: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 10,
+  },
+  tagChip: {
+    flexDirection: 'row',
+    backgroundColor: '#3478f6',
+    borderRadius: 16,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    marginRight: 8,
+    marginBottom: 8,
+    alignItems: 'center',
+  },
+  tagText: {
+    color: '#fff',
+    marginRight: 4,
+  },
+  footer: {
+    height: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderColor: '#ddd',
+    backgroundColor: '#fff',
+  },
   errorText: {
     color: 'red',
     fontSize: 12,
     marginBottom: 10,
-    paddingLeft: 10,
+    paddingLeft: 5,
+  },
+  footerText: {
+    fontSize: 12,
+    color: '#888',
+  },
+  checkboxGroup: {
+    marginVertical: 10,
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderWidth: 2,
+    borderColor: '#3478f6',
+    borderRadius: 4,
+    marginRight: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkedBox: {
+    backgroundColor: '#3478f6',
+  },
+  checkboxLabel: {
+    fontSize: 14,
+    color: '#333',
   },
 });

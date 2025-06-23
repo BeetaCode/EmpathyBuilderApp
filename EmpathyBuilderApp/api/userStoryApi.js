@@ -15,27 +15,51 @@ export const getUserStories = async () => {
 
     return { success: true, data: response.data.data };
   } catch (error) {
-    console.log(error);
     const errData = error.response?.data || { message: 'Network error' };
     return { success: false, error: errData };
   }
 };
 
-// export const getUserStories = async () => {
-//   const BASE_URL = `${API_URL}/UserStory`
-//   const role = await getUserRole();
+export const getMyUserStories = async () => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const userData = await AsyncStorage.getItem('user');
+    const { id, firstName, lastName } = JSON.parse(userData);
+    const response = await axios.post(
+      `${BASE_URL}/get-user-stories-by-userId`,
+      JSON.stringify(id), // send raw string
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    return { success: true, data: response.data.data };
+  } catch (error) {
+    const errData = error.response?.data || { message: 'Network error' };
+    return { success: false, error: errData };
+  }
+};
 
-//   if (role !== 'User' && role !== 'Admin') {
-//     return { success: false, message: 'Access denied' };
-//   }
-
-//   try {
-//     const response = await axios.get(
-//       `${BASE_URL}/get-user-stories`,
-//       await getAuthHeader()
-//     );
-//     return { success: true, data: response.data };
-//   } catch (err) {
-//     return { success: false, message: err.response?.data?.message || 'Error' };
-//   }
-// };
+export const addUserStory = async () => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const userData = await AsyncStorage.getItem('user');
+    const { id, firstName, lastName } = JSON.parse(userData);
+    const response = await axios.post(
+      `${BASE_URL}/get-user-stories-by-userId`,
+      JSON.stringify(id), // send raw string
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    return { success: true, data: response.data.data };
+  } catch (error) {
+    const errData = error.response?.data || { message: 'Network error' };
+    return { success: false, error: errData };
+  }
+};
