@@ -1,8 +1,9 @@
 import axios from 'axios';
 import { API_URL } from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import config from '../config';
 
-const BASE_URL = `${API_URL}/UserStory`;
+const BASE_URL = `${config.BASE_URL}/UserStory`;
 
 export const getUserStories = async () => {
   try {

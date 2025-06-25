@@ -353,8 +353,8 @@ const styles = StyleSheet.create({
   addButton: {
     marginLeft: 8,
     backgroundColor: '#3478f6',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
     borderRadius: 8,
   },
   addButtonText: {
@@ -484,7 +484,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top', // Important for Android
     fontSize: 14,
     backgroundColor: 'white',
-    width: 275,
+    width: 290,
     padding: 14,
   },
   tagList: {

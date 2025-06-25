@@ -1,11 +1,13 @@
 import axios from 'axios';
 import { API_URL } from '@env';
+import config from '../config';
 
 // Base URL of backend API
-const BASE_URL = `${API_URL}/Auth`;
+const BASE_URL = `${config.BASE_URL}/Auth`;
 
 export const registerUser = async (userDetails) => {
   try {
+    console.log(BASE_URL);
     const response = await axios.post(`${BASE_URL}/register`, userDetails);
     return response.data;
   } catch (error) {
@@ -16,6 +18,7 @@ export const registerUser = async (userDetails) => {
 
 export const loginUser = async (userDetails) => {
   try {
+    //console.log(BASE_URL);
     const response = await axios.post(`${BASE_URL}/login`, userDetails);
     return { success: true, data: response.data };
   } catch (error) {
