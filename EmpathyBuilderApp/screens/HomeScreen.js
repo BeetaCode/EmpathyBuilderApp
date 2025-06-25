@@ -29,7 +29,7 @@ const HomeScreen = () => {
     };
 
     fetchStories();
-  }, []);
+  }, [story]);
 
   return (
     <View style={styles.container}>

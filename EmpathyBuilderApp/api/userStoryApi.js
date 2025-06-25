@@ -64,10 +64,8 @@ export const addUserStory = async ({ story, tags, isShared, isAnonymous }) => {
         'Content-Type': 'application/json',
       },
     });
-    console.log(response.data.data.feedback);
     return { success: true, data: response.data };
   } catch (error) {
-    console.log(error);
     const errData = error.response?.data || { message: 'Network error' };
     return { success: false, error: errData };
   }

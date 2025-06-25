@@ -85,6 +85,14 @@ const ShareUserStoryScreen = () => {
         response.data.message === 'user_story_posted_successfully'
       ) {
         Alert.alert('You are Great!!!', response.data.data.feedback);
+      } else if (
+        response.success &&
+        response.data.message === 'user_story_posted_failed'
+      ) {
+        Alert.alert(
+          'Bad Behavior',
+          'Please try not to share negative stories.'
+        );
       } else {
         Alert.alert('Error', 'Something went wrong.');
       }
@@ -92,6 +100,7 @@ const ShareUserStoryScreen = () => {
       Alert.alert('Error', 'Something went wrong.');
     } finally {
       setShareLoading(false);
+      setuserStory('');
       setTag('');
     }
   };
