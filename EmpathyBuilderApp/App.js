@@ -7,6 +7,7 @@ import LoginScreen from './screens/LoginScreen';
 import HomeScreen from './screens/HomeScreen';
 import AuthLoadingScreen from './screens/AuthLoadingScreen';
 import ShareUserStoryScreen from './screens/ShareUserStoryScreen';
+import FeaturedUserStoriesScreen from './screens/FeaturedStoriesScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -41,6 +42,10 @@ export default function App() {
         <Stack.Screen
           name="ShareUserStory"
           component={ShareUserStoryScreen}
+        />
+        <Stack.Screen
+          name="FeaturedUserStories"
+          component={FeaturedUserStoriesScreen}
         />
       </Stack.Navigator>
     </NavigationContainer>

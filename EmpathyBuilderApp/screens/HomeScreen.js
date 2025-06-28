@@ -53,7 +53,9 @@ const HomeScreen = () => {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Featured Story</Text>
-            <TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('FeaturedUserStories')}
+            >
               <Text style={styles.viewAll}>View All</Text>
             </TouchableOpacity>
           </View>
@@ -85,11 +87,7 @@ const HomeScreen = () => {
                 ))}
               </View>
 
-              <Text style={styles.storyText}>
-                {story.story.length > 150
-                  ? `${story.story.substring(0, 150)}...`
-                  : story.story}
-              </Text>
+              <Text style={styles.storyText}>{story.story}</Text>
 
               <View style={styles.storyFooter}>
                 <Text style={styles.iconText}>💙 {story.likes}</Text>
@@ -98,9 +96,9 @@ const HomeScreen = () => {
                 </Text>
               </View>
 
-              <TouchableOpacity style={styles.button}>
+              {/* <TouchableOpacity style={styles.button}>
                 <Text style={styles.buttonText}>Read More</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
           ) : (
             <Text>No stories available.</Text>
