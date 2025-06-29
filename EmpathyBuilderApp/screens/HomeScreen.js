@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -10,26 +11,61 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { getUserStories } from '../api/userStoryApi';
+import { getChallenges } from '../api/userChallengeApi';
 import { useNavigation } from '@react-navigation/native';
 
 const HomeScreen = () => {
   const navigation = useNavigation();
   const [story, setStory] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [storyLoading, setStoryLoading] = useState(true);
+  const [challenge, setChallenge] = useState(null);
+  const [challengeLoading, setChallengeLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchStories = async () => {
-      const result = await getUserStories();
-      if (result.success) {
-        setStory(result.data[0]);
-      } else {
-        console.warn('Failed to load stories:', result.error.message);
-      }
-      setLoading(false);
-    };
+  useFocusEffect(
+    useCallback(() => {
+      const fetchStories = async () => {
+        const result = await getUserStories();
+        if (result.success) {
+          setStory(result.data[0]);
+        } else {
+          console.warn('Failed to load challenges:', result.error.message);
+        }
+        setStoryLoading(false);
+      };
 
-    fetchStories();
-  }, [story]);
+      fetchStories();
+    }, [])
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchChallenges = async () => {
+        const result = await getChallenges();
+        console.log(result.data);
+        if (result.success) {
+          setChallenge(result.data[0]);
+        } else {
+          console.warn('Failed to load stories:', result.error.message);
+        }
+        setChallengeLoading(false);
+      };
+
+      fetchChallenges();
+    }, [])
+  );
+
+  const getDaysLeft = (endDateString) => {
+    const now = new Date();
+    const endDate = new Date(endDateString);
+
+    // Calculate the difference in milliseconds
+    const diffTime = now - endDate;
+
+    // Convert milliseconds to days
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    return diffDays > 0 ? diffDays : 0; // never return negative days
+  };
 
   return (
     <View style={styles.container}>
@@ -60,7 +96,7 @@ const HomeScreen = () => {
             </TouchableOpacity>
           </View>
 
-          {loading ? (
+          {storyLoading ? (
             <ActivityIndicator
               size="large"
               color="#3478f6"
@@ -114,33 +150,46 @@ const HomeScreen = () => {
             </TouchableOpacity>
           </View>
 
-          <View style={styles.card}>
-            <View style={styles.challengeTags}>
-              <Text style={styles.challengeTagGreen}>Easy</Text>
-              <Text style={styles.challengeTagBlue}>Environment</Text>
-              <Ionicons
-                name="trophy-outline"
-                size={20}
-                color="#888"
-                style={{ marginLeft: 'auto' }}
-              />
+          {challengeLoading ? (
+            <ActivityIndicator
+              size="large"
+              color="#3478f6"
+            />
+          ) : story ? (
+            <View style={styles.card}>
+              <View style={styles.challengeTags}>
+                <Text style={styles.challengeTagGreen}>
+                  {challenge.difficulty}
+                </Text>
+                <Text style={styles.challengeTagBlue}>
+                  {challenge.category}
+                </Text>
+                <Ionicons
+                  name="trophy-outline"
+                  size={20}
+                  color="#888"
+                  style={{ marginLeft: 'auto' }}
+                />
+              </View>
+              <Text style={styles.challengeTitle}>{challenge.name}</Text>
+              <Text style={styles.challengeText}>{challenge.description}</Text>
+
+              <View style={styles.challengeFooter}>
+                <Text style={styles.iconText}>
+                  👥 {challenge.activeUserCount} participants
+                </Text>
+                <Text style={styles.timeText}>
+                  {getDaysLeft(challenge.postedOn)} days left
+                </Text>
+              </View>
+
+              <TouchableOpacity style={styles.button}>
+                <Text style={styles.buttonText}>Join Challenge</Text>
+              </TouchableOpacity>
             </View>
-
-            <Text style={styles.challengeTitle}>Community Clean-up</Text>
-            <Text style={styles.challengeText}>
-              Organize or join a local clean-up effort in your neighborhood or a
-              nearby park.
-            </Text>
-
-            <View style={styles.challengeFooter}>
-              <Text style={styles.iconText}>👥 152 participants</Text>
-              <Text style={styles.timeText}>12 days left</Text>
-            </View>
-
-            <TouchableOpacity style={styles.button}>
-              <Text style={styles.buttonText}>Join Challenge</Text>
-            </TouchableOpacity>
-          </View>
+          ) : (
+            <Text>No challenges available.</Text>
+          )}
         </View>
 
         {/* Share Stories */}
