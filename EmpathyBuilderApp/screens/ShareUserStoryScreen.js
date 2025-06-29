@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -39,20 +40,22 @@ const ShareUserStoryScreen = () => {
     setTags(tags.filter((t) => t !== tagToRemove));
   };
 
-  useEffect(() => {
-    setShareLoading(false);
-    const fetchStories = async () => {
-      const result = await getMyUserStories();
-      if (result.success) {
-        setStory(result.data[0]);
-      } else {
-        console.warn('Failed to load stories:', result.error.message);
-      }
-      setLoading(false);
-    };
+  useFocusEffect(
+    useCallback(() => {
+      setShareLoading(false);
+      const fetchStories = async () => {
+        const result = await getMyUserStories();
+        if (result.success) {
+          setStory(result.data[0]);
+        } else {
+          console.warn('Failed to load stories:', result.error.message);
+        }
+        setLoading(false);
+      };
 
-    fetchStories();
-  }, []);
+      fetchStories();
+    }, [])
+  );
 
   const validate = () => {
     let valid = true;

@@ -41,11 +41,10 @@ const HomeScreen = () => {
     useCallback(() => {
       const fetchChallenges = async () => {
         const result = await getChallenges();
-        console.log(result.data);
         if (result.success) {
           setChallenge(result.data[0]);
         } else {
-          console.warn('Failed to load stories:', result.error.message);
+          console.warn('Failed to load challenges:', result.error.message);
         }
         setChallengeLoading(false);
       };
@@ -54,12 +53,11 @@ const HomeScreen = () => {
     }, [])
   );
 
-  const getDaysLeft = (endDateString) => {
+  const getDaysLeft = (startDateString) => {
     const now = new Date();
-    const endDate = new Date(endDateString);
-
+    const startDate = new Date(startDateString);
     // Calculate the difference in milliseconds
-    const diffTime = now - endDate;
+    const diffTime = now - startDate;
 
     // Convert milliseconds to days
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -145,7 +143,7 @@ const HomeScreen = () => {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Current Challenge</Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('Challenges')}>
               <Text style={styles.viewAll}>View All</Text>
             </TouchableOpacity>
           </View>
@@ -179,7 +177,7 @@ const HomeScreen = () => {
                   👥 {challenge.activeUserCount} participants
                 </Text>
                 <Text style={styles.timeText}>
-                  {getDaysLeft(challenge.postedOn)} days left
+                  {getDaysLeft(challenge.startDate)} days left
                 </Text>
               </View>
 
