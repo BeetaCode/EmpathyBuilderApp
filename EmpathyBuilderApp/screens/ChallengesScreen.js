@@ -8,9 +8,14 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { getChallenges } from '../api/userChallengeApi';
+import {
+  setUserChallenge,
+  getNewlyJoinedChallenge,
+} from '../api/userChallengeApi';
 
 const ChallengesScreen = () => {
   const navigation = useNavigation();
@@ -51,6 +56,26 @@ const ChallengesScreen = () => {
       challenge.name?.toLowerCase().includes(search.toLowerCase()) ||
       challenge.description?.toLowerCase().includes(search.toLowerCase())
   );
+
+  const joinChallenge = async (id) => {
+    console.log('test');
+    const startedOn = new Date();
+    const progress = 0;
+
+    try {
+      const result = await setUserChallenge({ id, startedOn, progress });
+      if (
+        result.success &&
+        getNewlyJoinedChallenge(id)
+        //navigation.navigate('Home')
+        //result.data.message === 'user_story_posted_successfully'
+      ) {
+        Alert.alert('', 'success');
+      }
+    } catch (err) {
+      Alert.alert('Error', 'Something went wrong.');
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -133,7 +158,10 @@ const ChallengesScreen = () => {
                   {getDaysLeft(challenge.startDate)} days left
                 </Text>
               </View>
-              <TouchableOpacity style={styles.button}>
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => joinChallenge(challenge.id)}
+              >
                 <Text style={styles.buttonText}>Join Challenge</Text>
               </TouchableOpacity>
             </View>
