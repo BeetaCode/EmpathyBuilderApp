@@ -9,6 +9,7 @@ import AuthLoadingScreen from './screens/AuthLoadingScreen';
 import ShareUserStoryScreen from './screens/ShareUserStoryScreen';
 import FeaturedUserStoriesScreen from './screens/FeaturedStoriesScreen';
 import ChallengesScreen from './screens/ChallengesScreen';
+import ChallengeDetailScreen from './screens/ChallengeDetailScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -51,6 +52,10 @@ export default function App() {
         <Stack.Screen
           name="Challenges"
           component={ChallengesScreen}
+        />
+        <Stack.Screen
+          name="ChallengeDetail"
+          component={ChallengeDetailScreen}
         />
       </Stack.Navigator>
     </NavigationContainer>

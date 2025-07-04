@@ -60,10 +60,7 @@ const ChallengesScreen = () => {
   const getChallenge = async (id) => {
     const result = await getNewlyJoinedChallenge({ id });
     if (result.success) {
-      navigation.navigate('ChallengeDetailScreen', {
-        challengeDto: result.data.data.challengeDto,
-        userChallengeDto: result.data.data.userChallengeDto,
-      });
+      navigation.navigate('ChallengeDetail', { id });
     } else {
       Alert.alert('Error', result.error.message || 'Failed to load challenge');
     }

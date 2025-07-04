@@ -64,8 +64,8 @@ export const getNewlyJoinedChallenge = async ({ id }) => {
         },
       }
     );
-    //console.log(response.data.data.challengeDto.challengeDetail[].stepNo);
-    return { success: true, data: response };
+    //console.log(response);
+    return { success: true, data: response.data };
   } catch (error) {
     console.log(error);
     const errData = error.response?.data || { message: 'Network error' };
