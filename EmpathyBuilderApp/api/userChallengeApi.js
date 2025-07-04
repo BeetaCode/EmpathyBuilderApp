@@ -39,26 +39,24 @@ export const setUserChallenge = async ({ id, startedOn, progress }) => {
         'Content-Type': 'application/json',
       },
     });
-    console.log(response);
-    return { success: true, data: response.data };
+    return { success: true, data: response.data.data };
   } catch (error) {
+    //console.log('test');
     const errData = error.response?.data || { message: 'Network error' };
     return { success: false, error: errData };
   }
 };
 
 export const getNewlyJoinedChallenge = async ({ id }) => {
+  //console.log(id);
   try {
     const token = await AsyncStorage.getItem('token');
     const userData = await AsyncStorage.getItem('user');
     const { id: userId } = JSON.parse(userData);
-    const payload = {
-      challengeId: id,
-    };
 
     const response = await axios.post(
       `${BASE_URL}/get-newly-joined-challenge`,
-      payload,
+      id,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -66,9 +64,10 @@ export const getNewlyJoinedChallenge = async ({ id }) => {
         },
       }
     );
-    console.log(response);
-    return { success: true, data: response.data };
+    //console.log(response.data.data.challengeDto.challengeDetail[].stepNo);
+    return { success: true, data: response };
   } catch (error) {
+    console.log(error);
     const errData = error.response?.data || { message: 'Network error' };
     return { success: false, error: errData };
   }

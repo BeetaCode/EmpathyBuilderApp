@@ -29,7 +29,7 @@ const ChallengesScreen = () => {
       if (result.success) {
         setchallenges(result.data);
       } else {
-        console.warn('Failed to load challenges:', result.error.message);
+        console.warn('Failed to load challenges:', 'Something went wrong!');
       }
       setLoading(false);
     };
@@ -57,20 +57,31 @@ const ChallengesScreen = () => {
       challenge.description?.toLowerCase().includes(search.toLowerCase())
   );
 
+  const getChallenge = async (id) => {
+    const result = await getNewlyJoinedChallenge({ id });
+    if (result.success) {
+      navigation.navigate('ChallengeDetailScreen', {
+        challengeDto: result.data.data.challengeDto,
+        userChallengeDto: result.data.data.userChallengeDto,
+      });
+    } else {
+      Alert.alert('Error', result.error.message || 'Failed to load challenge');
+    }
+  };
+
   const joinChallenge = async (id) => {
-    console.log('test');
     const startedOn = new Date();
     const progress = 0;
 
     try {
       const result = await setUserChallenge({ id, startedOn, progress });
-      if (
+      if (result.success && result.data == 'challenge_join_successful') {
+        getChallenge(id);
+      } else if (
         result.success &&
-        getNewlyJoinedChallenge(id)
-        //navigation.navigate('Home')
-        //result.data.message === 'user_story_posted_successfully'
+        result.data == 'challenge_already_exists_for_user'
       ) {
-        Alert.alert('', 'success');
+        getChallenge(id);
       }
     } catch (err) {
       Alert.alert('Error', 'Something went wrong.');
