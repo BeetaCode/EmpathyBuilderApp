@@ -5,11 +5,17 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Modal,
+  Pressable,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import * as Progress from 'react-native-progress';
-import { getNewlyJoinedChallenge } from '../api/userChallengeApi';
+import { Checkbox, Portal, Button } from 'react-native-paper';
+import {
+  getNewlyJoinedChallenge,
+  updateChallengeSteps,
+} from '../api/userChallengeApi';
 
 const ChallengeDetailScreen = () => {
   const navigation = useNavigation();
@@ -17,12 +23,23 @@ const ChallengeDetailScreen = () => {
   const { id } = route.params;
 
   const [challengeData, setChallengeData] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [checkedSteps, setCheckedSteps] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
       const result = await getNewlyJoinedChallenge({ id });
       if (result.success) {
-        setChallengeData(result.data.data);
+        const challenge = result.data.data;
+        setChallengeData(challenge);
+
+        const completedSteps =
+          parseInt(challenge.userChallengeDto.progress || 0) / 20;
+        const checks = {};
+        challenge.challengeDto.challengeDetail.forEach((step, index) => {
+          checks[step.stepNo] = index < completedSteps;
+        });
+        setCheckedSteps(checks);
       } else {
         console.warn(result.error?.message || 'Error loading challenge');
       }
@@ -34,22 +51,51 @@ const ChallengeDetailScreen = () => {
   if (!challengeData) return null;
 
   const { challengeDto, userChallengeDto } = challengeData;
+  const progress = parseFloat(userChallengeDto.progress || '0');
+  const isCompleted = progress === 100;
 
   const getDaysLeft = () => {
     const now = new Date();
-    const startDate = new Date(challengeDto.startDate);
-    // Calculate the difference in milliseconds
-    const diffTime = now - startDate;
+    const end = new Date(challengeDto.endDate);
+    const diff = end - now;
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    return days > 0 ? days : 0;
+  };
 
-    // Convert milliseconds to days
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const toggleStep = (stepNo) => {
+    setCheckedSteps((prev) => ({
+      ...prev,
+      [stepNo]: !prev[stepNo],
+    }));
+  };
 
-    return diffDays > 0 ? diffDays : 0; // never return negative days
+  const handleSaveProgress = async () => {
+    const selectedSteps = Object.keys(checkedSteps)
+      .filter((k) => checkedSteps[k])
+      .map((k) => parseInt(k));
+
+    const result = await updateChallengeSteps(
+      challengeData.userChallengeDto.id,
+      selectedSteps
+    );
+
+    if (result.success) {
+      const newProgress = selectedSteps.length * 20;
+      setChallengeData((prev) => ({
+        ...prev,
+        userChallengeDto: {
+          ...prev.userChallengeDto,
+          progress: newProgress.toString(),
+        },
+      }));
+      setModalVisible(false);
+    } else {
+      alert(result.error.message || 'Failed to update');
+    }
   };
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerText}>Empathy Builder</Text>
         <TouchableOpacity>
@@ -71,22 +117,21 @@ const ChallengeDetailScreen = () => {
           color="black"
         />
       </TouchableOpacity>
+
       <ScrollView>
         <Text style={styles.title}>{challengeDto.name}</Text>
         <Text style={styles.description}>{challengeDto.description}</Text>
 
-        {/* Challenge Info */}
         <View style={styles.infoRow}>
           <Text>👥 {challengeDto.activeUserCount} participants</Text>
           <Text>🏆 {challengeDto.difficulty.toLowerCase()} difficulty</Text>
           <Text>⏳ {getDaysLeft()} days left</Text>
         </View>
 
-        {/* Progress Bar */}
         <View style={styles.progressSection}>
           <Text style={styles.sectionLabel}>Progress</Text>
           <Progress.Bar
-            progress={parseFloat(userChallengeDto.progress) / 100}
+            progress={progress / 100}
             width={null}
             height={12}
             borderRadius={6}
@@ -94,12 +139,9 @@ const ChallengeDetailScreen = () => {
             unfilledColor="#e0e0e0"
             borderWidth={0}
           />
-          <Text style={styles.progressText}>
-            {userChallengeDto.progress}% complete
-          </Text>
+          <Text style={styles.progressText}>{progress}% complete</Text>
         </View>
 
-        {/* Challenge Steps */}
         <Text style={styles.sectionLabel}>Challenge Steps</Text>
         {challengeDto.challengeDetail.map((step) => (
           <View
@@ -110,14 +152,67 @@ const ChallengeDetailScreen = () => {
           </View>
         ))}
 
-        {/* Impact */}
         <Text style={styles.sectionLabel}>Impact</Text>
         <Text style={styles.impactText}>{challengeDto.impact}</Text>
 
-        <TouchableOpacity style={styles.updateButton}>
-          <Text style={styles.updateButtonText}>Update Progress</Text>
-        </TouchableOpacity>
+        {!isCompleted ? (
+          <TouchableOpacity
+            style={styles.updateButton}
+            onPress={() => setModalVisible(true)}
+          >
+            <Text style={styles.updateButtonText}>Update Progress</Text>
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.completedBox}>
+            <Text style={styles.completedText}>
+              🎉 Challenge Completed! Great job!
+            </Text>
+          </View>
+        )}
       </ScrollView>
+
+      {/* Modal */}
+      <Portal>
+        <Modal
+          visible={modalVisible}
+          animationType="slide"
+          transparent
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Update Challenge Progress</Text>
+                <TouchableOpacity onPress={() => setModalVisible(false)}>
+                  <Ionicons
+                    name="close"
+                    size={24}
+                  />
+                </TouchableOpacity>
+              </View>
+
+              {challengeDto.challengeDetail.map((step) => (
+                <View
+                  key={step.id}
+                  style={styles.checkboxContainer}
+                >
+                  <Checkbox
+                    status={checkedSteps[step.stepNo] ? 'checked' : 'unchecked'}
+                    onPress={() => toggleStep(step.stepNo)}
+                  />
+                  <Text style={styles.checkboxLabel}>{step.step}</Text>
+                </View>
+              ))}
+
+              <Button
+                mode="contained"
+                onPress={handleSaveProgress}
+              >
+                Save Progress
+              </Button>
+            </View>
+          </View>
+        </Modal>
+      </Portal>
     </View>
   );
 };
@@ -129,30 +224,21 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     backgroundColor: '#fff',
-    paddingHorizontal: 12,
     paddingTop: 40,
-  },
-  backButton: {
-    marginTop: 30,
-    marginBottom: 10,
-    marginLeft: 10,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 0,
   },
   headerText: {
     fontSize: 20,
     fontWeight: '600',
     color: '#3478f6',
   },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
+  backButton: {
+    marginTop: 20,
+    marginBottom: 10,
   },
   title: {
     fontSize: 22,
@@ -203,6 +289,50 @@ const styles = StyleSheet.create({
   },
   updateButtonText: {
     color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 20,
+    elevation: 5,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  checkboxLabel: {
+    fontSize: 14,
+    marginLeft: 8,
+    flexShrink: 1,
+  },
+  completedBox: {
+    marginTop: 20,
+    padding: 14,
+    backgroundColor: '#e0f8e9',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  completedText: {
+    color: '#4CAF50',
     fontSize: 16,
     fontWeight: '600',
   },

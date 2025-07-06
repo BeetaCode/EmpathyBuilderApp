@@ -70,3 +70,25 @@ export const addUserStory = async ({ story, tags, isShared, isAnonymous }) => {
     return { success: false, error: errData };
   }
 };
+
+export const likeUserStory = async (userStoryId) => {
+  console.log('test123');
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const userData = await AsyncStorage.getItem('user');
+    const { id: userId } = JSON.parse(userData);
+    const url = `${BASE_URL}/like-user-story?userId=${userId}&userStoryId=${userStoryId}`;
+    const response = await axios.post(url, null, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    return { success: true, data: response.data };
+  } catch (error) {
+    console.log(error);
+    const err = error.response?.data || { message: 'Like failed' };
+    return { success: false, error: err };
+  }
+};

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -11,8 +11,8 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getChallenges } from '../api/userChallengeApi';
 import {
+  getChallenges,
   setUserChallenge,
   getNewlyJoinedChallenge,
 } from '../api/userChallengeApi';
@@ -23,19 +23,21 @@ const ChallengesScreen = () => {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchChallenges = async () => {
-      const result = await getChallenges();
-      if (result.success) {
-        setchallenges(result.data);
-      } else {
-        console.warn('Failed to load challenges:', 'Something went wrong!');
-      }
-      setLoading(false);
-    };
+  useFocusEffect(
+    useCallback(() => {
+      const fetchChallenges = async () => {
+        const result = await getChallenges();
+        if (result.success) {
+          setchallenges(result.data);
+        } else {
+          console.warn('Failed to load challenges:', 'Something went wrong!');
+        }
+        setLoading(false);
+      };
 
-    fetchChallenges();
-  }, []);
+      fetchChallenges();
+    }, [])
+  );
 
   const getDaysLeft = (startDateString) => {
     const now = new Date();
@@ -72,13 +74,17 @@ const ChallengesScreen = () => {
 
     try {
       const result = await setUserChallenge({ id, startedOn, progress });
-      if (result.success && result.data == 'challenge_join_successful') {
-        getChallenge(id);
+      console.log(result.data.userChallengeId);
+      if (
+        result.success &&
+        result.data.message == 'challenge_join_successful'
+      ) {
+        getChallenge(result.data.userChallengeId);
       } else if (
         result.success &&
-        result.data == 'challenge_already_exists_for_user'
+        result.data.message == 'challenge_already_exists_for_user'
       ) {
-        getChallenge(id);
+        getChallenge(result.data.userChallengeId);
       }
     } catch (err) {
       Alert.alert('Error', 'Something went wrong.');

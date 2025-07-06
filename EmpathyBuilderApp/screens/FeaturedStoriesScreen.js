@@ -10,7 +10,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getUserStories } from '../api/userStoryApi';
+import { getUserStories, likeUserStory } from '../api/userStoryApi';
 
 const FeaturedStoriesScreen = () => {
   const navigation = useNavigation();
@@ -37,6 +37,21 @@ const FeaturedStoriesScreen = () => {
       story.fullName?.toLowerCase().includes(search.toLowerCase()) ||
       story.story?.toLowerCase().includes(search.toLowerCase())
   );
+
+  const handleLike = async (storyId, index) => {
+    const result = await likeUserStory(storyId);
+    if (result.success) {
+      const likedresult = await getUserStories();
+      if (likedresult.success) {
+        setStories(likedresult.data);
+      } else {
+        console.warn('Failed to load stories:', likedresult.error.message);
+      }
+      setLoading(false);
+    } else {
+      alert(result.error?.message || 'Failed to like story');
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -119,7 +134,12 @@ const FeaturedStoriesScreen = () => {
               <Text style={styles.storyText}>{story.story}</Text>
 
               <View style={styles.storyFooter}>
-                <Text style={styles.iconText}>💙 {story.likes}</Text>
+                <TouchableOpacity
+                  onPress={() => handleLike(story.userStoryId, index)}
+                >
+                  <Text style={styles.iconText}>💙 {story.likes}</Text>
+                </TouchableOpacity>
+
                 <Text style={styles.timeText}>
                   {new Date(story.postedOn).toLocaleDateString()}
                 </Text>

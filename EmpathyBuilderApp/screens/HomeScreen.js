@@ -10,9 +10,13 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getUserStories } from '../api/userStoryApi';
-import { getChallenges } from '../api/userChallengeApi';
+import { getUserStories, likeUserStory } from '../api/userStoryApi';
 import { useNavigation } from '@react-navigation/native';
+import {
+  getChallenges,
+  setUserChallenge,
+  getNewlyJoinedChallenge,
+} from '../api/userChallengeApi';
 
 const HomeScreen = () => {
   const navigation = useNavigation();
@@ -25,8 +29,10 @@ const HomeScreen = () => {
     useCallback(() => {
       const fetchStories = async () => {
         const result = await getUserStories();
+
         if (result.success) {
           setStory(result.data[0]);
+          console.log(result.data[0].userStoryId);
         } else {
           console.warn('Failed to load challenges:', result.error.message);
         }
@@ -63,6 +69,55 @@ const HomeScreen = () => {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     return diffDays > 0 ? diffDays : 0; // never return negative days
+  };
+
+  const getChallenge = async (id) => {
+    const result = await getNewlyJoinedChallenge({ id });
+    if (result.success) {
+      navigation.navigate('ChallengeDetail', { id });
+    } else {
+      Alert.alert('Error', result.error.message || 'Failed to load challenge');
+    }
+  };
+
+  const joinChallenge = async (id) => {
+    const startedOn = new Date();
+    const progress = 0;
+
+    try {
+      const result = await setUserChallenge({ id, startedOn, progress });
+      if (
+        result.success &&
+        result.data.message == 'challenge_join_successful'
+      ) {
+        getChallenge(result.data.userChallengeId);
+      } else if (
+        result.success &&
+        result.data.message == 'challenge_already_exists_for_user'
+      ) {
+        getChallenge(result.data.userChallengeId);
+      }
+    } catch (err) {
+      Alert.alert('Error', 'Something went wrong.');
+    }
+  };
+
+  const handleLike = async () => {
+    if (!story) return;
+
+    const result = await likeUserStory(story.userStoryId);
+    if (result.success) {
+      const likedresult = await getUserStories();
+
+      if (likedresult.success) {
+        setStory(likedresult.data[0]);
+      } else {
+        console.warn('Failed to load challenges:', likedresult.error.message);
+      }
+      setStoryLoading(false);
+    } else {
+      alert(result.error?.message || 'Failed to like story');
+    }
   };
 
   return (
@@ -124,7 +179,10 @@ const HomeScreen = () => {
               <Text style={styles.storyText}>{story.story}</Text>
 
               <View style={styles.storyFooter}>
-                <Text style={styles.iconText}>💙 {story.likes}</Text>
+                <TouchableOpacity onPress={handleLike}>
+                  <Text style={styles.iconText}>💙 {story.likes}</Text>
+                </TouchableOpacity>
+
                 <Text style={styles.timeText}>
                   {new Date(story.postedOn).toLocaleDateString()}
                 </Text>
@@ -181,7 +239,10 @@ const HomeScreen = () => {
                 </Text>
               </View>
 
-              <TouchableOpacity style={styles.button}>
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => joinChallenge(challenge.id)}
+              >
                 <Text style={styles.buttonText}>Join Challenge</Text>
               </TouchableOpacity>
             </View>

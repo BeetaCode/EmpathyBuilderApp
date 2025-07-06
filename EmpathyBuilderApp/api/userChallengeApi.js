@@ -39,6 +39,7 @@ export const setUserChallenge = async ({ id, startedOn, progress }) => {
         'Content-Type': 'application/json',
       },
     });
+    //console.log(response.data.data);
     return { success: true, data: response.data.data };
   } catch (error) {
     //console.log('test');
@@ -68,6 +69,26 @@ export const getNewlyJoinedChallenge = async ({ id }) => {
     return { success: true, data: response.data };
   } catch (error) {
     console.log(error);
+    const errData = error.response?.data || { message: 'Network error' };
+    return { success: false, error: errData };
+  }
+};
+
+export const updateChallengeSteps = async (userChallengeId, steps) => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await axios.post(
+      `${BASE_URL}/update-challenge-steps?userChallengeId=${userChallengeId}`,
+      steps, // Array of stepNo
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    return { success: true, data: response.data };
+  } catch (error) {
     const errData = error.response?.data || { message: 'Network error' };
     return { success: false, error: errData };
   }

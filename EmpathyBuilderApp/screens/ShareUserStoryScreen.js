@@ -181,11 +181,7 @@ const ShareUserStoryScreen = () => {
                   ))}
                 </View>
 
-                <Text style={styles.storyText}>
-                  {story.story.length > 150
-                    ? `${story.story.substring(0, 150)}...`
-                    : story.story}
-                </Text>
+                <Text style={styles.storyText}>{story.story}</Text>
 
                 <View style={styles.storyFooter}>
                   <Text style={styles.iconText}>💙 {story.likes}</Text>
@@ -193,10 +189,6 @@ const ShareUserStoryScreen = () => {
                     {new Date(story.postedOn).toLocaleDateString()}
                   </Text>
                 </View>
-
-                <TouchableOpacity style={styles.button}>
-                  <Text style={styles.buttonText}>Read More</Text>
-                </TouchableOpacity>
               </View>
             ) : (
               <Text style={styles.noStoryText}>No stories available.</Text>
