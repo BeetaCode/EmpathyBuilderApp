@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -11,12 +11,13 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { getUserStories, likeUserStory } from '../api/userStoryApi';
-import { useNavigation } from '@react-navigation/native';
 import {
   getChallenges,
   setUserChallenge,
   getNewlyJoinedChallenge,
 } from '../api/userChallengeApi';
+import * as Sharing from 'expo-sharing';
+import * as FileSystem from 'expo-file-system';
 
 const HomeScreen = () => {
   const navigation = useNavigation();
@@ -120,6 +121,18 @@ const HomeScreen = () => {
     }
   };
 
+  const shareText = async (text) => {
+    const fileUri = FileSystem.documentDirectory + 'story.txt';
+    await FileSystem.writeAsStringAsync(fileUri, text);
+
+    if (!(await Sharing.isAvailableAsync())) {
+      alert('Sharing is not available on your device');
+      return;
+    }
+
+    await Sharing.shareAsync(fileUri);
+  };
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -142,9 +155,7 @@ const HomeScreen = () => {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Featured Story</Text>
-            <TouchableOpacity
-              onPress={() => navigation.navigate('FeaturedUserStories')}
-            >
+            <TouchableOpacity onPress={() => navigation.navigate('MyStories')}>
               <Text style={styles.viewAll}>View All</Text>
             </TouchableOpacity>
           </View>
@@ -188,9 +199,12 @@ const HomeScreen = () => {
                 </Text>
               </View>
 
-              {/* <TouchableOpacity style={styles.button}>
-                <Text style={styles.buttonText}>Read More</Text>
-              </TouchableOpacity> */}
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => shareText(story.story)}
+              >
+                <Text style={styles.buttonText}>Share Story</Text>
+              </TouchableOpacity>
             </View>
           ) : (
             <Text>No stories available.</Text>

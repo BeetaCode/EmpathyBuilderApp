@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigation } from '@react-navigation/native';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -16,6 +15,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { getMyUserStories, addUserStory } from '../api/userStoryApi';
+import * as Sharing from 'expo-sharing';
+import * as FileSystem from 'expo-file-system';
 
 const ShareUserStoryScreen = () => {
   const navigation = useNavigation();
@@ -108,6 +109,18 @@ const ShareUserStoryScreen = () => {
     }
   };
 
+  const shareText = async (text) => {
+    const fileUri = FileSystem.documentDirectory + 'story.txt';
+    await FileSystem.writeAsStringAsync(fileUri, text);
+
+    if (!(await Sharing.isAvailableAsync())) {
+      alert('Sharing is not available on your device');
+      return;
+    }
+
+    await Sharing.shareAsync(fileUri);
+  };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -149,7 +162,9 @@ const ShareUserStoryScreen = () => {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>My Stories</Text>
-              <TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('MyStories')}
+              >
                 <Text style={styles.viewAll}>View All</Text>
               </TouchableOpacity>
             </View>
@@ -189,6 +204,12 @@ const ShareUserStoryScreen = () => {
                     {new Date(story.postedOn).toLocaleDateString()}
                   </Text>
                 </View>
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={() => shareText(story.story)}
+                >
+                  <Text style={styles.buttonText}>Share Story</Text>
+                </TouchableOpacity>
               </View>
             ) : (
               <Text style={styles.noStoryText}>No stories available.</Text>

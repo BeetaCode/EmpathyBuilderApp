@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -10,29 +10,31 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getUserStories, likeUserStory } from '../api/userStoryApi';
+import { getMyUserStories, likeUserStory } from '../api/userStoryApi';
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
 
-const FeaturedStoriesScreen = () => {
+const MyStoriesScreen = () => {
   const navigation = useNavigation();
   const [stories, setStories] = useState([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchStories = async () => {
-      const result = await getUserStories();
-      if (result.success) {
-        setStories(result.data);
-      } else {
-        console.warn('Failed to load stories:', result.error.message);
-      }
-      setLoading(false);
-    };
+  useFocusEffect(
+    useCallback(() => {
+      const fetchStories = async () => {
+        const result = await getMyUserStories();
+        if (result.success) {
+          setStories(result.data);
+        } else {
+          console.warn('Failed to load stories:', result.error.message);
+        }
+        setLoading(false);
+      };
 
-    fetchStories();
-  }, []);
+      fetchStories();
+    }, [])
+  );
 
   const filteredStories = stories.filter(
     (story) =>
@@ -92,7 +94,7 @@ const FeaturedStoriesScreen = () => {
         />
       </TouchableOpacity>
 
-      <Text style={styles.featureTitle}>Featured Stories</Text>
+      <Text style={styles.featureTitle}>My Stories</Text>
       <Text style={styles.description}>
         Explore heartwarming featured stories of empathy and kindness from our
         community members
@@ -125,15 +127,6 @@ const FeaturedStoriesScreen = () => {
               key={index}
               style={styles.card}
             >
-              <View style={styles.storyHeader}>
-                <Text style={styles.storyAuthor}>{story.fullName}</Text>
-                <Ionicons
-                  name="person-circle-outline"
-                  size={24}
-                  color="#888"
-                />
-              </View>
-
               <View style={styles.storyTagContainer}>
                 {story.userStoryTags?.map((tag, i) => (
                   <Text
@@ -175,7 +168,7 @@ const FeaturedStoriesScreen = () => {
   );
 };
 
-export default FeaturedStoriesScreen;
+export default MyStoriesScreen;
 
 const styles = StyleSheet.create({
   container: {
