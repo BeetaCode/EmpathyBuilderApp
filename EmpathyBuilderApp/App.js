@@ -7,7 +7,7 @@ import LoginScreen from './screens/LoginScreen';
 import HomeScreen from './screens/HomeScreen';
 import AuthLoadingScreen from './screens/AuthLoadingScreen';
 import ShareUserStoryScreen from './screens/ShareUserStoryScreen';
-import FeaturedUserStoriesScreen from './screens/FeaturedStoriesScreen';
+import FeaturedStoriesScreen from './screens/FeaturedStoriesScreen';
 import ChallengesScreen from './screens/ChallengesScreen';
 import ChallengeDetailScreen from './screens/ChallengeDetailScreen';
 import MyStoriesScreen from './screens/MyStoriesScreen';
@@ -49,8 +49,8 @@ export default function App() {
             component={ShareUserStoryScreen}
           />
           <Stack.Screen
-            name="FeaturedUserStories"
-            component={FeaturedUserStoriesScreen}
+            name="FeaturedStories"
+            component={FeaturedStoriesScreen}
           />
           <Stack.Screen
             name="Challenges"

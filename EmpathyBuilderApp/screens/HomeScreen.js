@@ -155,7 +155,9 @@ const HomeScreen = () => {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Featured Story</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('MyStories')}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('FeaturedStories')}
+            >
               <Text style={styles.viewAll}>View All</Text>
             </TouchableOpacity>
           </View>
