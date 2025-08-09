@@ -30,7 +30,7 @@ const ProfileScreen = () => {
           if (!mounted) return;
 
           if (res.success) {
-            const payload = res.data?.data || null;
+            const payload = res.data || null; // <-- res.data IS the profile object
             setProfile(payload);
 
             // rewards comes as a JSON string
