@@ -12,6 +12,7 @@ import ChallengesScreen from './screens/ChallengesScreen';
 import ChallengeDetailScreen from './screens/ChallengeDetailScreen';
 import MyStoriesScreen from './screens/MyStoriesScreen';
 import { Provider as PaperProvider } from 'react-native-paper';
+import ProfileScreen from './screens/ProfileScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -63,6 +64,10 @@ export default function App() {
           <Stack.Screen
             name="MyStories"
             component={MyStoriesScreen}
+          />
+          <Stack.Screen
+            name="MyProfile"
+            component={ProfileScreen}
           />
         </Stack.Navigator>
       </NavigationContainer>

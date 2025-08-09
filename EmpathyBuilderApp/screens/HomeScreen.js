@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { getUserStories, likeUserStory } from '../api/userStoryApi';
+import { getProfileSummary } from '../api/userProfileApi';
 import {
   getChallenges,
   setUserChallenge,
@@ -138,7 +139,7 @@ const HomeScreen = () => {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerText}>Empathy Builder</Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('MyProfile')}>
           <Ionicons
             name="person-circle-outline"
             size={28}
