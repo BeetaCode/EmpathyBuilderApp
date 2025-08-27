@@ -7,52 +7,70 @@ import LoginScreen from './screens/LoginScreen';
 import HomeScreen from './screens/HomeScreen';
 import AuthLoadingScreen from './screens/AuthLoadingScreen';
 import ShareUserStoryScreen from './screens/ShareUserStoryScreen';
-import FeaturedUserStoriesScreen from './screens/FeaturedStoriesScreen';
+import FeaturedStoriesScreen from './screens/FeaturedStoriesScreen';
 import ChallengesScreen from './screens/ChallengesScreen';
+import ChallengeDetailScreen from './screens/ChallengeDetailScreen';
+import MyStoriesScreen from './screens/MyStoriesScreen';
+import { Provider as PaperProvider } from 'react-native-paper';
+import ProfileScreen from './screens/ProfileScreen';
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <Stack.Navigator
-        initialRouteName="Welcome"
-        screenOptions={{ headerShown: false }}
-      >
-        <Stack.Screen
-          name="AuthLoading"
-          component={AuthLoadingScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="Welcome"
-          component={WelcomeScreen}
-        />
-        <Stack.Screen
-          name="CreateAccount"
-          component={CreateAccountScreen}
-        />
-        <Stack.Screen
-          name="Login"
-          component={LoginScreen}
-        />
-        <Stack.Screen
-          name="Home"
-          component={HomeScreen}
-        />
-        <Stack.Screen
-          name="ShareUserStory"
-          component={ShareUserStoryScreen}
-        />
-        <Stack.Screen
-          name="FeaturedUserStories"
-          component={FeaturedUserStoriesScreen}
-        />
-        <Stack.Screen
-          name="Challenges"
-          component={ChallengesScreen}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <PaperProvider>
+      <NavigationContainer>
+        <Stack.Navigator
+          initialRouteName="Welcome"
+          screenOptions={{ headerShown: false }}
+        >
+          <Stack.Screen
+            name="AuthLoading"
+            component={AuthLoadingScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Welcome"
+            component={WelcomeScreen}
+          />
+          <Stack.Screen
+            name="CreateAccount"
+            component={CreateAccountScreen}
+          />
+          <Stack.Screen
+            name="Login"
+            component={LoginScreen}
+          />
+          <Stack.Screen
+            name="Home"
+            component={HomeScreen}
+          />
+          <Stack.Screen
+            name="ShareUserStory"
+            component={ShareUserStoryScreen}
+          />
+          <Stack.Screen
+            name="FeaturedStories"
+            component={FeaturedStoriesScreen}
+          />
+          <Stack.Screen
+            name="Challenges"
+            component={ChallengesScreen}
+          />
+          <Stack.Screen
+            name="ChallengeDetail"
+            component={ChallengeDetailScreen}
+          />
+          <Stack.Screen
+            name="MyStories"
+            component={MyStoriesScreen}
+          />
+          <Stack.Screen
+            name="MyProfile"
+            component={ProfileScreen}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </PaperProvider>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -10,9 +10,15 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getUserStories } from '../api/userStoryApi';
-import { getChallenges } from '../api/userChallengeApi';
-import { useNavigation } from '@react-navigation/native';
+import { getUserStories, likeUserStory } from '../api/userStoryApi';
+import { getProfileSummary } from '../api/userProfileApi';
+import {
+  getChallenges,
+  setUserChallenge,
+  getNewlyJoinedChallenge,
+} from '../api/userChallengeApi';
+import * as Sharing from 'expo-sharing';
+import * as FileSystem from 'expo-file-system';
 
 const HomeScreen = () => {
   const navigation = useNavigation();
@@ -25,10 +31,12 @@ const HomeScreen = () => {
     useCallback(() => {
       const fetchStories = async () => {
         const result = await getUserStories();
+
         if (result.success) {
           setStory(result.data[0]);
+          console.log(result.data[0].userStoryId);
         } else {
-          console.warn('Failed to load challenges:', result.error.message);
+          console.warn('Failed to load user stories:', result.error.message);
         }
         setStoryLoading(false);
       };
@@ -41,7 +49,9 @@ const HomeScreen = () => {
     useCallback(() => {
       const fetchChallenges = async () => {
         const result = await getChallenges();
+
         if (result.success) {
+          console.log(result.data[0]);
           setChallenge(result.data[0]);
         } else {
           console.warn('Failed to load challenges:', result.error.message);
@@ -65,12 +75,73 @@ const HomeScreen = () => {
     return diffDays > 0 ? diffDays : 0; // never return negative days
   };
 
+  const getChallenge = async (id) => {
+    const result = await getNewlyJoinedChallenge({ id });
+    if (result.success) {
+      navigation.navigate('ChallengeDetail', { id });
+    } else {
+      Alert.alert('Error', result.error.message || 'Failed to load challenge');
+    }
+  };
+
+  const joinChallenge = async (id) => {
+    const startedOn = new Date();
+    const progress = 0;
+
+    try {
+      const result = await setUserChallenge({ id, startedOn, progress });
+      if (
+        result.success &&
+        result.data.message == 'challenge_join_successful'
+      ) {
+        getChallenge(result.data.userChallengeId);
+      } else if (
+        result.success &&
+        result.data.message == 'challenge_already_exists_for_user'
+      ) {
+        getChallenge(result.data.userChallengeId);
+      }
+    } catch (err) {
+      Alert.alert('Error', 'Something went wrong.');
+    }
+  };
+
+  const handleLike = async () => {
+    if (!story) return;
+
+    const result = await likeUserStory(story.userStoryId);
+    if (result.success) {
+      const likedresult = await getUserStories();
+
+      if (likedresult.success) {
+        setStory(likedresult.data[0]);
+      } else {
+        console.warn('Failed to load Likes:', likedresult.error.message);
+      }
+      setStoryLoading(false);
+    } else {
+      alert(result.error?.message || 'Failed to like story');
+    }
+  };
+
+  const shareText = async (text) => {
+    const fileUri = FileSystem.documentDirectory + 'story.txt';
+    await FileSystem.writeAsStringAsync(fileUri, text);
+
+    if (!(await Sharing.isAvailableAsync())) {
+      alert('Sharing is not available on your device');
+      return;
+    }
+
+    await Sharing.shareAsync(fileUri);
+  };
+
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerText}>Empathy Builder</Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('MyProfile')}>
           <Ionicons
             name="person-circle-outline"
             size={28}
@@ -88,7 +159,7 @@ const HomeScreen = () => {
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Featured Story</Text>
             <TouchableOpacity
-              onPress={() => navigation.navigate('FeaturedUserStories')}
+              onPress={() => navigation.navigate('FeaturedStories')}
             >
               <Text style={styles.viewAll}>View All</Text>
             </TouchableOpacity>
@@ -124,15 +195,21 @@ const HomeScreen = () => {
               <Text style={styles.storyText}>{story.story}</Text>
 
               <View style={styles.storyFooter}>
-                <Text style={styles.iconText}>💙 {story.likes}</Text>
+                <TouchableOpacity onPress={handleLike}>
+                  <Text style={styles.iconText}>💙 {story.likes}</Text>
+                </TouchableOpacity>
+
                 <Text style={styles.timeText}>
                   {new Date(story.postedOn).toLocaleDateString()}
                 </Text>
               </View>
 
-              {/* <TouchableOpacity style={styles.button}>
-                <Text style={styles.buttonText}>Read More</Text>
-              </TouchableOpacity> */}
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => shareText(story.story)}
+              >
+                <Text style={styles.buttonText}>Share Story</Text>
+              </TouchableOpacity>
             </View>
           ) : (
             <Text>No stories available.</Text>
@@ -153,7 +230,7 @@ const HomeScreen = () => {
               size="large"
               color="#3478f6"
             />
-          ) : story ? (
+          ) : challenge ? (
             <View style={styles.card}>
               <View style={styles.challengeTags}>
                 <Text style={styles.challengeTagGreen}>
@@ -181,7 +258,10 @@ const HomeScreen = () => {
                 </Text>
               </View>
 
-              <TouchableOpacity style={styles.button}>
+              <TouchableOpacity
+                style={styles.button}
+                onPress={() => joinChallenge(challenge.id)}
+              >
                 <Text style={styles.buttonText}>Join Challenge</Text>
               </TouchableOpacity>
             </View>

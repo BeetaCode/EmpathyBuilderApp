@@ -50,6 +50,7 @@ const CreateAccountScreen = () => {
       valid = false;
     } else if (!emailRegex.test(email)) {
       setShowEmailError('Email Not Valid');
+      valid = false;
     } else {
       setShowEmailError('');
     }
@@ -60,6 +61,7 @@ const CreateAccountScreen = () => {
       setShowPasswordError(
         'Password must be 6-20 chars, include uppercase, number & special character'
       );
+      valid = false;
     } else {
       setShowPasswordError('');
     }
@@ -86,10 +88,17 @@ const CreateAccountScreen = () => {
         );
         navigation.navigate('Login');
       } else {
-        Alert.alert('Error', data.message || 'Registration failed.');
+        Alert.alert('Error', data.message + 'test' || 'Registration failed.');
       }
     } catch (err) {
-      Alert.alert('Registration Error', err.message || 'Something went wrong.');
+      if (err.message === 'user_already_exists') {
+        Alert.alert('Registration Error', 'Email already in use');
+      } else {
+        Alert.alert(
+          'Registration Error',
+          err.message || 'Something went wrong.'
+        );
+      }
     } finally {
       setLoading(false);
     }
