@@ -176,14 +176,14 @@ const ShareUserStoryScreen = () => {
               />
             ) : story ? (
               <View style={styles.card}>
-                <View style={styles.storyHeader}>
+                {/* <View style={styles.storyHeader}>
                   <Text style={styles.storyAuthor}>{story.fullName}</Text>
                   <Ionicons
                     name="person-circle-outline"
                     size={24}
                     color="#888"
                   />
-                </View>
+                </View> */}
 
                 <View style={styles.storyTagContainer}>
                   {story.userStoryTags.map((tag, i) => (

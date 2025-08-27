@@ -179,6 +179,12 @@ const ProfileScreen = () => {
           </View>
         </View>
 
+        {/* Rank */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>My Rank</Text>
+          <Text style={styles.rank}> {'#' + profile.rank ?? 0}</Text>
+        </View>
+
         {/* Badges / Rewards */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Badges</Text>
@@ -351,6 +357,12 @@ const styles = StyleSheet.create({
   badgeIcon: {
     width: 48,
     height: 48,
+  },
+  rank: {
+    fontSize: 50,
+    fontWeight: '700',
+    color: '#FFD700',
+    textAlign: 'center',
   },
 
   footer: {

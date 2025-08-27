@@ -54,12 +54,16 @@ const ChallengeDetailScreen = () => {
   const progress = parseFloat(userChallengeDto.progress || '0');
   const isCompleted = progress === 100;
 
-  const getDaysLeft = () => {
+  const getDaysLeft = (startDateString) => {
     const now = new Date();
-    const end = new Date(challengeDto.endDate);
-    const diff = end - now;
-    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-    return days > 0 ? days : 0;
+    const startDate = new Date(startDateString);
+    // Calculate the difference in milliseconds
+    const diffTime = now - startDate;
+
+    // Convert milliseconds to days
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    return diffDays > 0 ? diffDays : 0; // never return negative days
   };
 
   const toggleStep = (stepNo) => {
@@ -125,7 +129,7 @@ const ChallengeDetailScreen = () => {
         <View style={styles.infoRow}>
           <Text>👥 {challengeDto.activeUserCount} participants</Text>
           <Text>🏆 {challengeDto.difficulty.toLowerCase()} difficulty</Text>
-          <Text>⏳ {getDaysLeft()} days left</Text>
+          <Text>⏳ {getDaysLeft(challengeDto.startDate)} days left</Text>
         </View>
 
         <View style={styles.progressSection}>

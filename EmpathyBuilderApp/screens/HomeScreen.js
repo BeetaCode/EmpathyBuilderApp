@@ -36,7 +36,7 @@ const HomeScreen = () => {
           setStory(result.data[0]);
           console.log(result.data[0].userStoryId);
         } else {
-          console.warn('Failed to load challenges:', result.error.message);
+          console.warn('Failed to load user stories:', result.error.message);
         }
         setStoryLoading(false);
       };
@@ -49,7 +49,9 @@ const HomeScreen = () => {
     useCallback(() => {
       const fetchChallenges = async () => {
         const result = await getChallenges();
+
         if (result.success) {
+          console.log(result.data[0]);
           setChallenge(result.data[0]);
         } else {
           console.warn('Failed to load challenges:', result.error.message);
@@ -114,7 +116,7 @@ const HomeScreen = () => {
       if (likedresult.success) {
         setStory(likedresult.data[0]);
       } else {
-        console.warn('Failed to load challenges:', likedresult.error.message);
+        console.warn('Failed to load Likes:', likedresult.error.message);
       }
       setStoryLoading(false);
     } else {
@@ -228,7 +230,7 @@ const HomeScreen = () => {
               size="large"
               color="#3478f6"
             />
-          ) : story ? (
+          ) : challenge ? (
             <View style={styles.card}>
               <View style={styles.challengeTags}>
                 <Text style={styles.challengeTagGreen}>
