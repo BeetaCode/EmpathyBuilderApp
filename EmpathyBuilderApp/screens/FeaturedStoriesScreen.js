@@ -34,11 +34,40 @@ const FeaturedStoriesScreen = () => {
     fetchStories();
   }, []);
 
-  const filteredStories = stories.filter(
-    (story) =>
-      story.fullName?.toLowerCase().includes(search.toLowerCase()) ||
-      story.story?.toLowerCase().includes(search.toLowerCase())
-  );
+  // const filteredStories = stories.filter(
+  //   (story) =>
+  //     story.fullName?.toLowerCase().includes(search.toLowerCase()) ||
+  //     story.story?.toLowerCase().includes(search.toLowerCase())
+  // );
+
+  const searchLower = search.trim().toLowerCase();
+
+  const filteredStories = React.useMemo(() => {
+    if (!searchLower) return stories;
+
+    return stories.filter((story) => {
+      const name = story.fullName?.toLowerCase() ?? '';
+      const text = story.story?.toLowerCase() ?? '';
+
+      const tagsFrom = (arr) =>
+        (Array.isArray(arr) ? arr : [])
+          .map((t) => (typeof t === 'string' ? t : t?.tag))
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
+
+      const tagsJoined = [
+        tagsFrom(story.userStoryTags),
+        tagsFrom(story.userStoryTagsAlso),
+      ].join(' ');
+
+      return (
+        name.includes(searchLower) ||
+        text.includes(searchLower) ||
+        tagsJoined.includes(searchLower)
+      );
+    });
+  }, [stories, searchLower]);
 
   const handleLike = async (storyId, index) => {
     const result = await likeUserStory(storyId);
