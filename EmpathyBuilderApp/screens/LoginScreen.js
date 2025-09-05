@@ -77,9 +77,11 @@ const LoginScreen = () => {
         Alert.alert('Login failed', 'Username or password is incorrect');
       } else {
         Alert.alert('Login error', 'Something went wrong');
+        setLoading(false);
       }
     } catch (err) {
       Alert.alert('Login error', err.message || 'Something went wrong');
+      setLoading(false);
     } finally {
       setLoading(false);
     }

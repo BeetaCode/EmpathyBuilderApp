@@ -72,7 +72,6 @@ export const addUserStory = async ({ story, tags, isShared, isAnonymous }) => {
 };
 
 export const likeUserStory = async (userStoryId) => {
-  console.log('test123');
   try {
     const token = await AsyncStorage.getItem('token');
     const userData = await AsyncStorage.getItem('user');
@@ -84,10 +83,8 @@ export const likeUserStory = async (userStoryId) => {
         'Content-Type': 'application/json',
       },
     });
-
     return { success: true, data: response.data };
   } catch (error) {
-    console.log(error);
     const err = error.response?.data || { message: 'Like failed' };
     return { success: false, error: err };
   }

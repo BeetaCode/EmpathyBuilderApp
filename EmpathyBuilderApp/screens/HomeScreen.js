@@ -26,6 +26,7 @@ const HomeScreen = () => {
   const [storyLoading, setStoryLoading] = useState(true);
   const [challenge, setChallenge] = useState(null);
   const [challengeLoading, setChallengeLoading] = useState(true);
+  const [isLiked, setIsLiked] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
@@ -34,7 +35,6 @@ const HomeScreen = () => {
 
         if (result.success) {
           setStory(result.data[0]);
-          console.log(result.data[0].userStoryId);
         } else {
           console.warn('Failed to load user stories:', result.error.message);
         }
@@ -51,7 +51,6 @@ const HomeScreen = () => {
         const result = await getChallenges();
 
         if (result.success) {
-          console.log(result.data[0]);
           setChallenge(result.data[0]);
         } else {
           console.warn('Failed to load challenges:', result.error.message);
@@ -110,6 +109,9 @@ const HomeScreen = () => {
     if (!story) return;
 
     const result = await likeUserStory(story.userStoryId);
+
+    setIsLiked(result.data.data.isLiked);
+
     if (result.success) {
       const likedresult = await getUserStories();
 
@@ -196,7 +198,9 @@ const HomeScreen = () => {
 
               <View style={styles.storyFooter}>
                 <TouchableOpacity onPress={handleLike}>
-                  <Text style={styles.iconText}>💙 {story.likes}</Text>
+                  <Text style={styles.iconText}>
+                    {isLiked === 1 ? '❤️' : '💙'} {story.likes}
+                  </Text>
                 </TouchableOpacity>
 
                 <Text style={styles.timeText}>

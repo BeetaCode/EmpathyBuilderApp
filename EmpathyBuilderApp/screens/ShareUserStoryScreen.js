@@ -89,6 +89,7 @@ const ShareUserStoryScreen = () => {
         response.data.message === 'user_story_posted_successfully'
       ) {
         Alert.alert('You are Great!!!', response.data.data.feedback);
+        navigation.navigate('MyStories');
       } else if (
         response.success &&
         response.data.message === 'user_story_posted_failed'
